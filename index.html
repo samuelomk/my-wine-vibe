@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Find your wine vibe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"DM Sans"', "system-ui", "sans-serif"],
+            },
+            colors: {
+              border: "hsl(var(--border))",
+              input: "hsl(var(--input))",
+              ring: "hsl(var(--ring))",
+              background: "hsl(var(--background))",
+              foreground: "hsl(var(--foreground))",
+              primary: {
+                DEFAULT: "hsl(var(--primary))",
+                foreground: "hsl(var(--primary-foreground))",
+              },
+              secondary: {
+                DEFAULT: "hsl(var(--secondary))",
+                foreground: "hsl(var(--secondary-foreground))",
+              },
+              muted: {
+                DEFAULT: "hsl(var(--muted))",
+                foreground: "hsl(var(--muted-foreground))",
+              },
+              accent: {
+                DEFAULT: "hsl(var(--accent))",
+                foreground: "hsl(var(--accent-foreground))",
+              },
+              card: {
+                DEFAULT: "hsl(var(--card))",
+                foreground: "hsl(var(--card-foreground))",
+              },
+            },
+            borderRadius: {
+              lg: "var(--radius)",
+              md: "calc(var(--radius) - 2px)",
+              sm: "calc(var(--radius) - 4px)",
+            },
+          },
+        },
+      };
+    </script>
+    <style type="text/tailwindcss">
+      @layer base {
+        :root {
+          /* Burgundy-forward brand (shadcn-style HSL tokens) */
+          --background: 30 20% 97%;
+          --foreground: 340 15% 18%;
+          --card: 30 25% 99%;
+          --card-foreground: 340 15% 18%;
+          --primary: 350 45% 32%;
+          --primary-foreground: 30 30% 98%;
+          --secondary: 350 18% 93%;
+          --secondary-foreground: 350 40% 22%;
+          --muted: 30 12% 92%;
+          --muted-foreground: 340 8% 42%;
+          --accent: 38 45% 88%;
+          --accent-foreground: 340 30% 22%;
+          --border: 350 12% 88%;
+          --input: 350 12% 88%;
+          --ring: 350 45% 32%;
+          --radius: 0.75rem;
+        }
+        * {
+          @apply border-border;
+        }
+        body {
+          @apply bg-background text-foreground antialiased;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          #progress-bar {
+            transition: none;
+          }
+        }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen font-sans">
+    <div
+      id="app"
+      class="mx-auto flex min-h-screen max-w-lg flex-col px-4 py-8 sm:px-6 sm:py-12"
+    >
+      <!-- Intro -->
+      <section
+        id="screen-intro"
+        class="screen flex flex-1 flex-col justify-center"
+        aria-labelledby="intro-heading"
+      >
+        <div
+          class="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8"
+        >
+          <p
+            class="mb-2 text-xs font-medium uppercase tracking-wider text-primary"
+          >
+            Wine vibe
+          </p>
+          <h1 id="intro-heading" class="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+            Find your wine vibe
+          </h1>
+          <p class="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
+            Not sure what to drink? Answer five quick questions — mood, food,
+            texture, and what matters tonight. No grape varieties required.
+          </p>
+          <p class="mt-2 text-xs text-muted-foreground">
+            About 1 minute · No account
+          </p>
+          <button
+            type="button"
+            id="btn-start"
+            class="mt-8 inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            Start
+          </button>
+        </div>
+      </section>
+
+      <!-- Quiz card stack -->
+      <section
+        id="screen-quiz"
+        class="screen hidden flex-1 flex-col"
+        aria-live="polite"
+      >
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            id="btn-back"
+            class="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-border bg-card px-3 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Back
+          </button>
+          <span
+            id="step-label"
+            class="text-xs font-medium text-muted-foreground"
+          ></span>
+        </div>
+        <div
+          class="relative flex flex-1 flex-col rounded-xl border border-border bg-card p-5 shadow-sm sm:p-7"
+        >
+          <div class="mb-5 h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              id="progress-bar"
+              class="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+              style="width: 0%"
+            ></div>
+          </div>
+          <h2
+            id="question-title"
+            class="text-balance text-lg font-semibold tracking-tight sm:text-xl"
+          ></h2>
+          <p
+            id="question-hint"
+            class="mt-1 text-sm text-muted-foreground"
+          ></p>
+          <div id="options" class="mt-6 flex flex-col gap-2"></div>
+        </div>
+      </section>
+
+      <!-- Result -->
+      <section
+        id="screen-result"
+        class="screen hidden flex-1 flex-col justify-center pb-4"
+        aria-labelledby="result-heading"
+      >
+        <div class="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <p class="mb-2 text-xs font-medium uppercase tracking-wider text-primary">
+            Your wine vibe
+          </p>
+          <!-- Primary archetype art: source assets ~800×480 (5:3); displayed full card width, max-height 220–240px, object-fit cover -->
+          <figure
+            id="result-archetype-figure"
+            class="result-archetype-visual mb-5 hidden overflow-hidden rounded-lg bg-muted/20"
+          >
+            <img
+              id="result-archetype-image"
+              src=""
+              alt=""
+              width="800"
+              height="480"
+              loading="lazy"
+              decoding="async"
+              class="block h-[208px] w-full object-contain object-center sm:h-[220px]"
+            />
+          </figure>
+          <h2
+            id="result-heading"
+            class="text-balance text-2xl font-semibold tracking-tight"
+          ></h2>
+          <p
+            id="result-subtitle"
+            class="mt-2 text-sm text-muted-foreground sm:text-base"
+          ></p>
+
+          <div class="mt-4">
+            <p class="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Recommended for you
+            </p>
+            <div
+              class="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]"
+              aria-label="Recommended products"
+            >
+              <div
+                id="result-products"
+                class="flex snap-x snap-mandatory gap-3"
+              ></div>
+            </div>
+          </div>
+
+          <div
+            class="mt-6 rounded-lg border border-border bg-muted/40 p-4 text-sm leading-relaxed text-foreground"
+          >
+            <p class="text-xs font-medium text-muted-foreground">
+              Why this fits you
+            </p>
+            <p id="result-why" class="mt-2 text-pretty"></p>
+          </div>
+
+          <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <button
+              type="button"
+              data-cta="bottles"
+              class="cta-btn inline-flex h-11 flex-1 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              See matching bottles
+            </button>
+            <button
+              type="button"
+              data-cta="save"
+              class="cta-btn-secondary inline-flex h-11 flex-1 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium shadow-sm transition hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Save my profile
+            </button>
+            <button
+              type="button"
+              data-cta="compare"
+              class="cta-btn-secondary inline-flex h-11 flex-1 items-center justify-center rounded-md border border-border bg-card px-4 text-sm font-medium shadow-sm transition hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Compare 3 picks
+            </button>
+          </div>
+
+          <button
+            type="button"
+            id="btn-restart"
+            class="mt-4 w-full text-center text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Start over
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var VERSION = "1";
+
+        /** Query params: ctaBottlesUrl, ctaSaveUrl, ctaCompareUrl — optional deep links */
+        function getQueryParam(key) {
+          var params = new URLSearchParams(window.location.search);
+          return params.get(key) || "";
+        }
+
+        var CONFIG = {
+          ctaBottlesUrl: getQueryParam("ctaBottlesUrl") || "#",
+          ctaSaveUrl: getQueryParam("ctaSaveUrl") || "#",
+          ctaCompareUrl: getQueryParam("ctaCompareUrl") || "#",
+        };
+
+        var QUESTIONS = [
+          {
+            id: "q1",
+            title: "What are you in the mood for today?",
+            hint: "Think vibe, not grape.",
+            options: [
+              { value: "fresh", label: "Fresh" },
+              { value: "cozy", label: "Cozy" },
+              { value: "bold", label: "Bold" },
+              { value: "celebratory", label: "Celebratory" },
+              { value: "adventurous", label: "Adventurous" },
+            ],
+          },
+          {
+            id: "q2",
+            title: "What are you eating, if anything?",
+            hint: "We’ll use this to steer texture and pairing.",
+            options: [
+              { value: "red_meat", label: "Red meat" },
+              { value: "seafood", label: "Seafood" },
+              { value: "cheese", label: "Cheese" },
+              { value: "spicy", label: "Spicy food" },
+              { value: "dessert", label: "Dessert" },
+              { value: "none", label: "No food in mind" },
+            ],
+          },
+          {
+            id: "q3",
+            title: "Which texture sounds best?",
+            hint: "Sensory words beat technical ones.",
+            options: [
+              { value: "crisp", label: "Crisp" },
+              { value: "smooth", label: "Smooth" },
+              { value: "rich", label: "Rich" },
+              { value: "silky", label: "Silky" },
+              { value: "bubbly", label: "Bubbly" },
+            ],
+          },
+          {
+            id: "q4",
+            title: "How adventurous are you?",
+            hint: "Classic comforts vs. something new.",
+            options: [
+              { value: "familiar", label: "Familiar" },
+              { value: "open", label: "Open" },
+              { value: "surprise", label: "Surprise me" },
+            ],
+          },
+          {
+            id: "q5",
+            title: "What matters most right now?",
+            hint: "There’s no wrong answer.",
+            options: [
+              { value: "easy", label: "Easy to drink" },
+              { value: "food", label: "Food-friendly" },
+              { value: "premium", label: "Premium feel" },
+              { value: "value", label: "Great value" },
+              { value: "memorable", label: "Something memorable" },
+            ],
+          },
+        ];
+
+        /**
+         * Internal tags for scoring archetypes (compact keys).
+         */
+        function answersToTags(a) {
+          var tags = [];
+          if (a.q1) tags.push("m_" + a.q1);
+          if (a.q2) tags.push("f_" + a.q2);
+          if (a.q3) tags.push("t_" + a.q3);
+          if (a.q4) tags.push("a_" + a.q4);
+          if (a.q5) tags.push("p_" + a.q5);
+          return tags;
+        }
+
+        /**
+         * PNG filenames from wine-archetype/ (spaces encoded in URLs).
+         * summit-bold maps to asset "summit gold.png".
+         */
+        var ARCHETYPE_IMAGE_FILES = {
+          "crisp-daybreak": "crisp daybreak.png",
+          "velvet-hearth": "velvet hearth.png",
+          "summit-bold": "summit gold.png",
+          "spark-moment": "spark moment.png",
+          "passport-pour": "passport pour.png",
+          "silk-occasion": "silk occasion.png",
+          "weeknight-easy": "weeknight easy.png",
+          "chefs-companion": "chefs companion.png",
+          "sweet-finale": "sweet finale.png",
+          "tide-glass": "tide and glass.png",
+        };
+
+        function archetypeImageSrc(archId) {
+          var file = ARCHETYPE_IMAGE_FILES[archId];
+          if (!file) return "";
+          return "wine-archetype/" + encodeURIComponent(file);
+        }
+
+        var ARCHETYPES = [
+          {
+            id: "crisp-daybreak",
+            title: "Crisp daybreak",
+            subtitle: "Bright, lifted wines with refreshing energy",
+            weights: {
+              m_fresh: 4,
+              t_crisp: 4,
+              f_seafood: 3,
+              f_none: 2,
+              p_easy: 3,
+              a_familiar: 2,
+            },
+          },
+          {
+            id: "velvet-hearth",
+            title: "Velvet hearth",
+            subtitle: "Soft, cozy pours that feel like a warm room",
+            weights: {
+              m_cozy: 4,
+              t_smooth: 4,
+              f_red_meat: 3,
+              p_food: 3,
+              a_familiar: 2,
+            },
+          },
+          {
+            id: "summit-bold",
+            title: "Summit bold",
+            subtitle: "Structured reds with presence and depth",
+            weights: {
+              m_bold: 4,
+              t_rich: 4,
+              f_red_meat: 4,
+              p_memorable: 2,
+            },
+          },
+          {
+            id: "spark-moment",
+            title: "Spark moment",
+            subtitle: "Effervescent wines made for toasting",
+            weights: {
+              m_celebratory: 4,
+              t_bubbly: 5,
+              p_premium: 2,
+              p_memorable: 2,
+            },
+          },
+          {
+            id: "passport-pour",
+            title: "Passport pour",
+            subtitle: "Off-the-beaten-path bottles worth discovering",
+            weights: {
+              m_adventurous: 4,
+              a_surprise: 4,
+              a_open: 3,
+              p_memorable: 2,
+            },
+          },
+          {
+            id: "silk-occasion",
+            title: "Silk occasion",
+            subtitle: "Refined textures for cheese boards and slow evenings",
+            weights: {
+              t_silky: 4,
+              f_cheese: 3,
+              p_premium: 3,
+              p_memorable: 2,
+            },
+          },
+          {
+            id: "weeknight-easy",
+            title: "Weeknight easy",
+            subtitle: "Approachable sippers that don’t overthink the meal",
+            weights: {
+              p_easy: 4,
+              p_value: 3,
+              a_familiar: 3,
+              f_none: 2,
+            },
+          },
+          {
+            id: "chefs-companion",
+            title: "Chef’s companion",
+            subtitle: "Flexible wines built to play nice at the table",
+            weights: {
+              p_food: 4,
+              f_spicy: 3,
+              t_smooth: 2,
+              m_cozy: 1,
+            },
+          },
+          {
+            id: "sweet-finale",
+            title: "Sweet finale",
+            subtitle: "Richer pours that lean into dessert moments",
+            weights: {
+              f_dessert: 5,
+              t_rich: 3,
+              t_silky: 2,
+              p_memorable: 2,
+            },
+          },
+          {
+            id: "tide-glass",
+            title: "Tide & glass",
+            subtitle: "Crisp, ocean-minded whites and rosés",
+            weights: {
+              f_seafood: 4,
+              m_fresh: 3,
+              t_crisp: 3,
+              p_easy: 2,
+            },
+          },
+        ];
+
+        var RECOMMENDED_PRODUCTS = [
+          {
+            id: "beaumont-monastrell",
+            name: "Beaumont La",
+            subtitle: "Tremenda Monastrell Alicante",
+            price: "$250",
+            countryFlag: "🇪🇸",
+            styleTag: "Red",
+            image: "assets/default-wine-bottle.svg",
+            url: "https://example.com/products/beaumont-monastrell",
+          },
+          {
+            id: "rioja-reserva",
+            name: "Rioja Reserva",
+            subtitle: "Tempranillo, Rioja Alta",
+            price: "$280",
+            countryFlag: "🇪🇸",
+            styleTag: "Red",
+            image: "assets/default-wine-bottle.svg",
+            url: "https://example.com/products/rioja-reserva",
+          },
+          {
+            id: "etna-rosso",
+            name: "Etna Rosso",
+            subtitle: "Nerello Mascalese Sicily",
+            price: "$320",
+            countryFlag: "🇮🇹",
+            styleTag: "Red",
+            image: "assets/default-wine-bottle.svg",
+            url: "https://example.com/products/etna-rosso",
+          },
+          {
+            id: "cava-brut",
+            name: "Cava Brut",
+            subtitle: "Traditional Method Penedes",
+            price: "$230",
+            countryFlag: "🇪🇸",
+            styleTag: "Sparkling",
+            image: "assets/default-wine-bottle.svg",
+            url: "https://example.com/products/cava-brut",
+          },
+          {
+            id: "sancerre-blanc",
+            name: "Sancerre Blanc",
+            subtitle: "Loire Valley Sauvignon Blanc",
+            price: "$300",
+            countryFlag: "🇫🇷",
+            styleTag: "White",
+            image: "assets/default-wine-bottle.svg",
+            url: "https://example.com/products/sancerre-blanc",
+          },
+        ];
+
+        var PRODUCT_IDS_BY_ARCHETYPE = {
+          "crisp-daybreak": [
+            "sancerre-blanc",
+            "cava-brut",
+            "beaumont-monastrell",
+            "rioja-reserva",
+            "etna-rosso",
+          ],
+          "velvet-hearth": [
+            "beaumont-monastrell",
+            "rioja-reserva",
+            "etna-rosso",
+            "sancerre-blanc",
+            "cava-brut",
+          ],
+          "summit-bold": [
+            "rioja-reserva",
+            "etna-rosso",
+            "beaumont-monastrell",
+            "sancerre-blanc",
+            "cava-brut",
+          ],
+          "spark-moment": [
+            "cava-brut",
+            "sancerre-blanc",
+            "rioja-reserva",
+            "beaumont-monastrell",
+            "etna-rosso",
+          ],
+          "passport-pour": [
+            "etna-rosso",
+            "beaumont-monastrell",
+            "rioja-reserva",
+            "sancerre-blanc",
+            "cava-brut",
+          ],
+          "silk-occasion": [
+            "beaumont-monastrell",
+            "sancerre-blanc",
+            "etna-rosso",
+            "cava-brut",
+            "rioja-reserva",
+          ],
+          "weeknight-easy": [
+            "beaumont-monastrell",
+            "cava-brut",
+            "sancerre-blanc",
+            "rioja-reserva",
+            "etna-rosso",
+          ],
+          "chefs-companion": [
+            "sancerre-blanc",
+            "rioja-reserva",
+            "etna-rosso",
+            "beaumont-monastrell",
+            "cava-brut",
+          ],
+          "sweet-finale": [
+            "beaumont-monastrell",
+            "cava-brut",
+            "etna-rosso",
+            "sancerre-blanc",
+            "rioja-reserva",
+          ],
+          "tide-glass": [
+            "sancerre-blanc",
+            "cava-brut",
+            "beaumont-monastrell",
+            "rioja-reserva",
+            "etna-rosso",
+          ],
+        };
+
+        function getRecommendedProducts(primaryArchetypeId) {
+          var ids =
+            PRODUCT_IDS_BY_ARCHETYPE[primaryArchetypeId] ||
+            [
+              "beaumont-monastrell",
+              "rioja-reserva",
+              "etna-rosso",
+              "cava-brut",
+              "sancerre-blanc",
+            ];
+          var byId = {};
+          for (var i = 0; i < RECOMMENDED_PRODUCTS.length; i++) {
+            byId[RECOMMENDED_PRODUCTS[i].id] = RECOMMENDED_PRODUCTS[i];
+          }
+          var list = [];
+          for (var j = 0; j < ids.length; j++) {
+            if (byId[ids[j]]) list.push(byId[ids[j]]);
+          }
+          return list.slice(0, 5);
+        }
+
+        function scoreArchetypes(tags) {
+          var set = {};
+          for (var i = 0; i < tags.length; i++) set[tags[i]] = true;
+
+          var ranked = ARCHETYPES.map(function (arch) {
+            var score = 0;
+            var w = arch.weights;
+            for (var k in w) {
+              if (Object.prototype.hasOwnProperty.call(w, k) && set[k]) {
+                score += w[k];
+              }
+            }
+            return { arch: arch, score: score };
+          });
+
+          ranked.sort(function (x, y) {
+            return y.score - x.score || x.arch.title.localeCompare(y.arch.title);
+          });
+          return ranked;
+        }
+
+        var LABELS = {
+          q1: {
+            fresh: "fresh energy",
+            cozy: "cozy comfort",
+            bold: "bold presence",
+            celebratory: "celebration",
+            adventurous: "adventure",
+          },
+          q3: {
+            crisp: "crisp",
+            smooth: "smooth",
+            rich: "rich",
+            silky: "silky",
+            bubbly: "bubbly",
+          },
+        };
+
+        function buildWhyText(answers, primary) {
+          var mood =
+            LABELS.q1[answers.q1] || "your mood";
+          var texture =
+            LABELS.q3[answers.q3] || "that texture";
+          var foodMap = {
+            red_meat: "red meat",
+            seafood: "seafood",
+            cheese: "cheese",
+            spicy: "spicy dishes",
+            dessert: "dessert",
+            none: "no fixed dish in mind",
+          };
+          var food = foodMap[answers.q2] || "your meal";
+
+          return (
+            "You leaned toward **" +
+            mood +
+            "** with a **" +
+            texture +
+            "** pour, while thinking about **" +
+            food +
+            "** — that points to **" +
+            primary.title +
+            "**: " +
+            primary.subtitle.toLowerCase() +
+            "."
+          );
+        }
+
+        function renderWhyHtml(text) {
+          var parts = text.split(/\*\*(.*?)\*\*/g);
+          var html = "";
+          for (var i = 0; i < parts.length; i++) {
+            if (i % 2 === 1) {
+              html += "<strong>" + escapeHtml(parts[i]) + "</strong>";
+            } else {
+              html += escapeHtml(parts[i]);
+            }
+          }
+          return html;
+        }
+
+        function escapeHtml(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        function renderRecommendedProducts(primaryArchetypeId) {
+          var products = getRecommendedProducts(primaryArchetypeId);
+          resultProducts.innerHTML = "";
+          for (var i = 0; i < products.length; i++) {
+            var p = products[i];
+            var link = document.createElement("a");
+            link.href = p.url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.className =
+              "group w-44 shrink-0 snap-start rounded-xl border border-border bg-card p-3 shadow-sm transition hover:border-primary/40 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+            link.setAttribute(
+              "aria-label",
+              "Open product " + p.name + " in a new tab"
+            );
+            link.innerHTML =
+              '<img src="' +
+              escapeHtml(p.image) +
+              '" alt="' +
+              escapeHtml(p.name + " bottle") +
+              '" class="mb-2 h-24 w-full rounded-md bg-muted/50 object-contain object-center" loading="lazy" decoding="async" />' +
+              '<p class="line-clamp-1 text-base font-semibold leading-tight">' +
+              escapeHtml(p.name) +
+              "</p>" +
+              '<p class="line-clamp-2 min-h-[2.5rem] text-sm leading-tight text-muted-foreground">' +
+              escapeHtml(p.subtitle) +
+              "</p>" +
+              '<div class="mt-2 flex items-center gap-2">' +
+              '<span class="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">' +
+              escapeHtml(p.styleTag) +
+              "</span>" +
+              '<span class="text-sm" aria-hidden="true">' +
+              escapeHtml(p.countryFlag) +
+              "</span>" +
+              "</div>" +
+              '<p class="mt-2 text-2xl font-bold tracking-tight">' +
+              escapeHtml(p.price) +
+              "</p>";
+            resultProducts.appendChild(link);
+          }
+        }
+
+        /* --- UI state --- */
+        var answers = { q1: null, q2: null, q3: null, q4: null, q5: null };
+        var stepIndex = 0;
+
+        var elIntro = document.getElementById("screen-intro");
+        var elQuiz = document.getElementById("screen-quiz");
+        var elResult = document.getElementById("screen-result");
+        var elProgress = document.getElementById("progress-bar");
+        var elStepLabel = document.getElementById("step-label");
+        var elQuestionTitle = document.getElementById("question-title");
+        var elQuestionHint = document.getElementById("question-hint");
+        var elOptions = document.getElementById("options");
+        var elBtnBack = document.getElementById("btn-back");
+        var resultHeading = document.getElementById("result-heading");
+        var resultSubtitle = document.getElementById("result-subtitle");
+        var resultWhy = document.getElementById("result-why");
+        var resultProducts = document.getElementById("result-products");
+        var resultArchetypeFigure = document.getElementById(
+          "result-archetype-figure"
+        );
+        var resultArchetypeImage = document.getElementById(
+          "result-archetype-image"
+        );
+
+        var lastResult = {
+          primary: null,
+          alternates: [],
+          derivedTags: [],
+        };
+
+        function showScreen(name) {
+          elIntro.classList.toggle("hidden", name !== "intro");
+          elQuiz.classList.toggle("hidden", name !== "quiz");
+          elResult.classList.toggle("hidden", name !== "result");
+          postHeight();
+        }
+
+        function postHeight() {
+          var h = document.documentElement.scrollHeight;
+          try {
+            if (window.parent !== window) {
+              window.parent.postMessage(
+                {
+                  type: "wine-vibe:resize",
+                  payload: { contentHeight: h, version: VERSION },
+                },
+                "*"
+              );
+            }
+          } catch (e) {}
+        }
+
+        function postComplete(payload) {
+          try {
+            if (window.parent !== window) {
+              window.parent.postMessage(
+                { type: "wine-vibe:complete", payload: payload },
+                "*"
+              );
+            }
+          } catch (e) {}
+        }
+
+        function postCta(ctaId) {
+          try {
+            if (window.parent !== window) {
+              window.parent.postMessage(
+                {
+                  type: "wine-vibe:cta",
+                  payload: {
+                    ctaId: ctaId,
+                    version: VERSION,
+                    primaryArchetypeId: lastResult.primary && lastResult.primary.id,
+                    alternateArchetypeIds: lastResult.alternates.map(function (a) {
+                      return a.id;
+                    }),
+                  },
+                },
+                "*"
+              );
+            }
+          } catch (e) {}
+        }
+
+        function renderQuestion() {
+          var q = QUESTIONS[stepIndex];
+          var n = QUESTIONS.length;
+          elStepLabel.textContent = "Question " + (stepIndex + 1) + " of " + n;
+          elProgress.style.width = ((stepIndex + 1) / n) * 100 + "%";
+          elQuestionTitle.textContent = q.title;
+          elQuestionHint.textContent = q.hint;
+          elOptions.innerHTML = "";
+
+          var qid = q.id;
+          elBtnBack.disabled = stepIndex === 0;
+          elBtnBack.classList.toggle("opacity-40", stepIndex === 0);
+
+          for (var i = 0; i < q.options.length; i++) {
+            (function (option) {
+              var btn = document.createElement("button");
+              btn.type = "button";
+              btn.className =
+                "quiz-opt flex min-h-[48px] w-full items-center rounded-lg border border-border bg-card px-4 py-3 text-left text-sm font-medium shadow-sm transition hover:border-primary/40 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+              btn.textContent = option.label;
+              btn.setAttribute("data-value", option.value);
+              btn.addEventListener("click", function () {
+                selectOption(qid, option.value);
+              });
+              elOptions.appendChild(btn);
+            })(q.options[i]);
+          }
+
+          elQuestionTitle.setAttribute("tabindex", "-1");
+          elQuestionTitle.focus();
+          postHeight();
+        }
+
+        function selectOption(qid, value) {
+          answers[qid] = value;
+          if (stepIndex < QUESTIONS.length - 1) {
+            stepIndex++;
+            renderQuestion();
+          } else {
+            finishQuiz();
+          }
+        }
+
+        function finishQuiz() {
+          var tags = answersToTags(answers);
+          var ranked = scoreArchetypes(tags);
+
+          var seenIds = {};
+          var topThree = [];
+          for (var r = 0; r < ranked.length && topThree.length < 3; r++) {
+            var arch = ranked[r].arch;
+            if (!seenIds[arch.id]) {
+              seenIds[arch.id] = true;
+              topThree.push(arch);
+            }
+          }
+
+          var fi = 0;
+          while (topThree.length < 3 && fi < ARCHETYPES.length) {
+            if (!seenIds[ARCHETYPES[fi].id]) {
+              seenIds[ARCHETYPES[fi].id] = true;
+              topThree.push(ARCHETYPES[fi]);
+            }
+            fi++;
+          }
+
+          var primary = topThree[0];
+          var alt1 = topThree[1];
+          var alt2 = topThree[2];
+
+          lastResult.primary = primary;
+          lastResult.alternates = [alt1, alt2];
+          lastResult.derivedTags = tags.slice();
+
+          resultHeading.textContent = primary.title;
+          resultSubtitle.textContent = primary.subtitle;
+
+          var imgSrc = archetypeImageSrc(primary.id);
+          if (imgSrc) {
+            resultArchetypeImage.src = imgSrc;
+            resultArchetypeImage.alt =
+              primary.title + " — " + primary.subtitle;
+            resultArchetypeFigure.classList.remove("hidden");
+          } else {
+            resultArchetypeImage.removeAttribute("src");
+            resultArchetypeImage.alt = "";
+            resultArchetypeFigure.classList.add("hidden");
+          }
+
+          renderRecommendedProducts(primary.id);
+
+          var why = buildWhyText(answers, primary);
+          resultWhy.innerHTML = renderWhyHtml(why);
+
+          showScreen("result");
+          postHeight();
+
+          postComplete({
+            version: VERSION,
+            answers: {
+              q1: answers.q1,
+              q2: answers.q2,
+              q3: answers.q3,
+              q4: answers.q4,
+              q5: answers.q5,
+            },
+            derivedTags: tags,
+            primaryArchetypeId: primary.id,
+            alternateArchetypeIds: [alt1.id, alt2.id],
+          });
+        }
+
+        document.getElementById("btn-start").addEventListener("click", function () {
+          stepIndex = 0;
+          showScreen("quiz");
+          renderQuestion();
+        });
+
+        elBtnBack.addEventListener("click", function () {
+          if (stepIndex > 0) {
+            stepIndex--;
+            var prevQ = QUESTIONS[stepIndex];
+            answers[prevQ.id] = null;
+            renderQuestion();
+          }
+        });
+
+        document.getElementById("btn-restart").addEventListener("click", function () {
+          answers = { q1: null, q2: null, q3: null, q4: null, q5: null };
+          stepIndex = 0;
+          resultArchetypeImage.removeAttribute("src");
+          resultArchetypeImage.alt = "";
+          resultArchetypeFigure.classList.add("hidden");
+          resultProducts.innerHTML = "";
+          showScreen("intro");
+          postHeight();
+        });
+
+        function navigateCta(kind) {
+          postCta(kind);
+          var url =
+            kind === "bottles"
+              ? CONFIG.ctaBottlesUrl
+              : kind === "save"
+                ? CONFIG.ctaSaveUrl
+                : CONFIG.ctaCompareUrl;
+          if (url && url !== "#") {
+            window.open(url, "_blank", "noopener,noreferrer");
+          }
+        }
+
+        document.querySelectorAll("[data-cta]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            navigateCta(btn.getAttribute("data-cta") || "bottles");
+          });
+        });
+
+        window.addEventListener("resize", postHeight);
+        window.addEventListener("load", postHeight);
+      })();
+    </script>
+  </body>
+</html>
